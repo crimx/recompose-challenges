@@ -7,10 +7,7 @@
 
 import React, { SFC, ComponentType, ComponentClass } from 'react'
 
-type Diff<T extends string, U extends string> = ({[P in T]: P } &
-  {[P in U]: never } & { [x: string]: never })[T]
-type Omit<T, K extends keyof T> = Pick<T, Diff<keyof T, K>>
-type Override<Ti, To> = Omit<Ti & To, keyof To> & To
+import { Override } from '../typings/helpers'
 
 /*
  * Create a SFC that accepts a user name props and renders it.
@@ -33,13 +30,12 @@ const PersonJack: SFC<PersonJackProps> = () => <Person name='Jack' />
 /*
  * Create a HOC that produces the previous HOC, but allows to lock any name.
  */
-function overrideProps<TOutter> (outterProps: TOutter) {
-  return function <TInner>(
-    BaseComp: ComponentType<TInner>
-  ): ComponentType<Override<TInner, TOutter>> {
-    return function (innerProps: Override<TInner, TOutter>) {
+function overrideProps<POutter> (outterProps: Readonly<POutter>) {
+  return function<PInner> (BaseComp: ComponentType<PInner>) {
+    type PEnhance = Readonly<Override<PInner, POutter>>
+    return function (innerProps: PEnhance) {
       return <BaseComp {...innerProps} {...outterProps} />
-    }
+    } as ComponentType<PEnhance>
   }
 }
 
