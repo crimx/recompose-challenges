@@ -1,43 +1,39 @@
 /**
  * Eager function optimization was removed due to https://github.com/acdlite/recompose/releases/tag/v0.26.0
+ * What it does is to replace createElement with function call when possible.
  */
 
-import React, { ComponentType, ReactNode, SFC, ComponentClass } from 'react'
+import React, { ReactType, ComponentType, SFC, ComponentClass, ReactNode } from 'react'
 
-import { Override } from '../typings/helpers'
-
-window['process'] = { env: { NODE_ENV: 'development' } }
-
-function createEagerFactory<P> (Component: ComponentType<P>) {
-  return (props: Readonly<P>, children?: ReactNode) => {
-    if (isReferentiallyTransparentFunctionComponent(Component)) {
+function createEagerFactory<T> (type: ReactType<T>) {
+  return function<P extends T> (props: P, children?: ReactNode) {
+    if (isReferentiallyTransparentFunctionComponent<P>(type)) {
       return children
-        ? Component({ ...props as any, children })
-        : Component(props)
+        ? type({ ...props as any, children })
+        : type(props)
     }
 
+    const Component = type
     return children
       ? <Component {...props}>{children}</Component>
       : <Component {...props} />
   }
 }
 
-function isReferentiallyTransparentFunctionComponent<P> (Component: ComponentType<P> | any): Component is SFC<P> {
+function isReferentiallyTransparentFunctionComponent<P> (type: ReactType<P> | any): type is SFC<P> {
   return Boolean(
-    typeof Component === 'function' &&
-    !isClassComponent(Component) &&
-    !Component.defaultProps &&
-    !Component.contextTypes &&
-    // @ts-ignore
-    (window.process.env.NODE_ENV === 'production' || !Component.propTypes)
+    typeof type === 'function' &&
+    !isClassComponent(type) &&
+    !type.defaultProps &&
+    !type.contextTypes
   )
 }
 
-function isClassComponent<P> (Component: ComponentType<P> | any): Component is ComponentClass<P> {
+function isClassComponent<P> (Component: ReactType<P> | any): Component is ComponentClass<P> {
   return Boolean(
     Component &&
     Component.prototype &&
-    typeof Component.prototype.isReactComponent === 'object'
+    typeof Component.prototype.render === 'function'
   )
 }
 
@@ -45,25 +41,26 @@ function isClassComponent<P> (Component: ComponentType<P> | any): Component is C
  * Usage
  */
 
-function overrideProps<POutter> (overrideProps: Readonly<POutter>) {
-  return function<PInner> (BaseComponent: ComponentType<PInner>) {
-    type PEnhance = Readonly<Override<PInner, POutter>>
+function overrideProps<POverride> (overrideProps: POverride) {
+  return function<PBase extends { [k in keyof POverride]: any }> (
+    BaseComponent: ComponentType<PBase>
+  ): ComponentType<PBase> {
     const factory = createEagerFactory(BaseComponent)
 
-    return function (props: PEnhance) {
+    return function (props) {
       return factory(
         { ...props as any, ...overrideProps as any },
         props['children']
       )
-    } as ComponentType<PEnhance>
+    }
   }
 }
 
 const Person: ComponentType<{ name: string }> = ({ name }) =>
   <h1>{name}</h1>
 
-const anythingNamedJack = overrideProps<{ name: 'Jack' }>({ name: 'Jack' })
-const PersonJack = anythingNamedJack(Person)
+const nameJack = overrideProps<{ name: 'Jack' }>({ name: 'Jack' })
+const PersonJack = nameJack(Person)
 
 export default class extends React.Component {
   state = { name: 'Tom' }
@@ -74,8 +71,7 @@ export default class extends React.Component {
     return (
       <>
         <Person name={this.state.name} />
-        {/* TypeScript will catch the wrong props, bypassing... */}
-        <PersonJack name={this.state.name as any} />
+        <PersonJack name={this.state.name} />
       </>
     )
   }
