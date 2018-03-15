@@ -21,6 +21,15 @@ const Person: SFC<PersonProps> = ({ name, age }) => (
   </div>
 )
 
+const lowerCaseName = <T extends {}>(Comp: ReactType<T>): SFC<T & { name: string }> => {
+  return (props: T) => {
+    let p = typeof props['name'] === 'string'
+      ? { name: props['name'].toLowerCase() }
+      : {}
+    return <Comp {...props} {...p} />
+  }
+}
+
 const upperCaseName = <T extends {}>(Comp: ReactType<T>): SFC<T & { name: string }> => {
   return (props: T) => {
     let p = typeof props['name'] === 'string'
@@ -35,13 +44,14 @@ const turnEighteen = <T extends {}>(Comp: ReactType<T>): SFC<T & { age: number }
 }
 
 const enhance = compose(
+  lowerCaseName,
   upperCaseName,
   turnEighteen
 )
 
 const EnhancedPerson = enhance(Person)
 
-export default () => <EnhancedPerson name='sam' age={99} />
+export default () => <EnhancedPerson name='Sam' age={99} />
 
 /**
  * Implementation
