@@ -1,9 +1,33 @@
 /**
  * Implement the `compose` function which compose multiple HOCs into a single HOC.
- * `compose` is just a nicer way to achieve `c(b(a()))`-like nested function calls.
+ * `compose(a, b, c)` is just a nicer way to achieve `c(b(a()))`.
  */
 
 import React, { ReactType, ComponentType, SFC } from 'react'
+
+/**
+ * Implementation
+ */
+
+type ComponentEnhancer = <PInner, POutter = PInner>(Comp: ReactType<PInner>) => ComponentType<POutter>
+
+export function compose (...funcs: Array<Function>): ComponentEnhancer {
+  if (funcs.length <= 0) {
+    return (arg: any) => arg
+  }
+
+  if (funcs.length === 1) {
+    return funcs[0] as any
+  }
+
+  const innerFunc = funcs[funcs.length - 1]
+  const restFunc = funcs.slice(0, -1)
+  const reducer = (res: any, fn: Function) => fn(res)
+
+  return function composed (...args: any[]) {
+    return restFunc.reduceRight(reducer, innerFunc(...args))
+  }
+}
 
 /**
  * Usage
@@ -52,27 +76,3 @@ const enhance = compose(
 const EnhancedPerson = enhance(Person)
 
 export default () => <EnhancedPerson name='Sam' age={99} />
-
-/**
- * Implementation
- */
-
-type ComponentEnhancer = <PInner, POutter = PInner>(Comp: ReactType<PInner>) => ComponentType<POutter>
-
-function compose (...funcs: Array<Function>): ComponentEnhancer {
-  if (funcs.length <= 0) {
-    return (arg: any) => arg
-  }
-
-  if (funcs.length === 1) {
-    return funcs[0] as any
-  }
-
-  const innerFunc = funcs[funcs.length - 1]
-  const restFunc = funcs.slice(0, -1)
-  const reducer = (res: any, fn: Function) => fn(res)
-
-  return function composed (...args: any[]) {
-    return restFunc.reduceRight(reducer, innerFunc(...args))
-  }
-}
