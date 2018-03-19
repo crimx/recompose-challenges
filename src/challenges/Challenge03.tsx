@@ -1,6 +1,6 @@
 /**
  * Implement the `compose` function which compose multiple HOCs into a single HOC.
- * `compose(a, b, c)` is just a nicer way to achieve `c(b(a()))`.
+ * `compose(a, b, c)(...)` is just a nicer way to achieve `a(b(c(...)))`.
  */
 
 import React, { ReactType, ComponentType, SFC } from 'react'
