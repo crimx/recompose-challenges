@@ -9,9 +9,45 @@ import React, { ReactType, ComponentType, SFC } from 'react'
  * Implementation
  */
 
-type ComponentEnhancer = <PInner, POutter = PInner>(Comp: ReactType<PInner>) => ComponentType<POutter>
+// Hardcoded signatures for 2-6 parameters
+export function compose<A, B, C> (
+  f1: (X: B) => C,
+  f2: (X: A) => B
+): (X: A) => C
+export function compose<A, B, C, D> (
+  f1: (X: C) => D,
+  f2: (X: B) => C,
+  f3: (X: A) => B
+): (X: A) => D
+export function compose<A, B, C, D, E> (
+  f1: (X: D) => E,
+  f2: (X: C) => D,
+  f3: (X: B) => C,
+  f4: (X: A) => B
+): (X: A) => E
+export function compose<A, B, C, D, E, F> (
+  f1: (X: E) => F,
+  f2: (X: D) => E,
+  f3: (X: C) => D,
+  f4: (X: B) => C,
+  f5: (X: A) => B
+): (X: A) => F
+export function compose<A, B, C, D, E, F, G> (
+  f1: (X: F) => G,
+  f2: (X: E) => F,
+  f3: (X: D) => E,
+  f4: (X: C) => D,
+  f5: (X: B) => C,
+  f6: (X: A) => B
+): (X: A) => G
+export function compose<T> (
+  f1: (x: any) => T,
+  ...funcs: Function[]
+): (x: any) => T
 
-export function compose (...funcs: Array<Function>): ComponentEnhancer {
+export function compose<T> (
+  ...funcs: Function[]
+): (x: any) => T {
   if (funcs.length <= 0) {
     return (arg: any) => arg
   }
@@ -45,8 +81,8 @@ const Person: SFC<PersonProps> = ({ name, age }) => (
   </div>
 )
 
-const lowerCaseName = <T extends {}>(Comp: ReactType<T>): SFC<T & { name: string }> => {
-  return (props: T) => {
+const lowerCaseName = (Comp: ReactType<PersonProps>): SFC<PersonProps> => {
+  return (props: PersonProps) => {
     let p = typeof props['name'] === 'string'
       ? { name: props['name'].toLowerCase() }
       : {}
@@ -54,8 +90,8 @@ const lowerCaseName = <T extends {}>(Comp: ReactType<T>): SFC<T & { name: string
   }
 }
 
-const upperCaseName = <T extends {}>(Comp: ReactType<T>): SFC<T & { name: string }> => {
-  return (props: T) => {
+const upperCaseName = (Comp: ReactType<PersonProps>): SFC<PersonProps> => {
+  return (props: PersonProps) => {
     let p = typeof props['name'] === 'string'
       ? { name: props['name'].toUpperCase() }
       : {}
@@ -63,8 +99,8 @@ const upperCaseName = <T extends {}>(Comp: ReactType<T>): SFC<T & { name: string
   }
 }
 
-const turnEighteen = <T extends {}>(Comp: ReactType<T>): SFC<T & { age: number }> => {
-  return (props: T) => <Comp {...props} age={18} />
+const turnEighteen = (Comp: ReactType<PersonProps>): SFC<PersonProps> => {
+  return (props: PersonProps) => <Comp {...props} age={18} />
 }
 
 const enhance = compose(

@@ -15,6 +15,7 @@
 
 import React, { Component, createElement, ReactType, ComponentClass } from 'react'
 import { shallowEqual } from 'recompose'
+import { Omit } from '../typings/helpers'
 
 /**
  * Implementation
@@ -32,12 +33,16 @@ export function withStateHandlers<TState, TUpdaters extends StateHandlerMap<TSta
   initialState: TState | ((input: TOutter) => TState),
   stateUpdaters: StateUpdaters<TOutter, TState, TUpdaters>
 ) {
-  return function <P extends TOutter & TState & TUpdaters>(
+  return function <
+    P extends TOutter & TState & TUpdaters = TOutter & TState & TUpdaters,
+    WithStateHandlersEnhancer = Omit<P, keyof (TOutter & TState & TUpdaters)> & TOutter
+  >(
     BaseComponent: ReactType<P>
-  ): ComponentClass<TOutter> {
-    return class WithStateHandlers extends Component<TOutter, TState> {
+  ): ComponentClass<WithStateHandlersEnhancer> {
+    return class WithStateHandlers extends Component<WithStateHandlersEnhancer, TState> {
       state = typeof initialState === 'function'
-        ? initialState(this.props)
+        // FIXME: TypeScript failed to conduct the type
+        ? initialState(this.props as any)
         : initialState
 
       updaters = Object.keys(stateUpdaters)
@@ -49,7 +54,8 @@ export function withStateHandlers<TState, TUpdaters extends StateHandlerMap<TSta
               mayBeEvent.persist()
             }
             this.setState((state, props) =>
-              stateUpdaters[key](state, props)(mayBeEvent, ...payload)
+              // FIXME: TypeScript failed to conduct the type
+              stateUpdaters[key](state, props as any)(mayBeEvent, ...payload)
             )
           }
           return obj
@@ -66,7 +72,8 @@ export function withStateHandlers<TState, TUpdaters extends StateHandlerMap<TSta
       render () {
         return createElement(
           BaseComponent,
-          Object.assign({}, this.props, this.state, this.updaters) as P
+          // FIXME: TypeScript failed to conduct the type
+          Object.assign({}, this.props, this.state, this.updaters) as any
         )
       }
     }

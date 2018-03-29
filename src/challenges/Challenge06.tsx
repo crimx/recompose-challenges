@@ -62,13 +62,13 @@ const enhance = compose(
       fetchData().then(this.props.updateData).catch(console.error)
     }
   }),
-  bracnch<{ data: Data }>(
+  bracnch<{ data?: Data }>(
     props => !props.data,
     renderComponent(Loader)
   )
 )
 
-export default enhance<any>(DisplayData)
+export default enhance(DisplayData)
 
 function fetchData (): Promise<Data> {
   return new Promise(resolve => {

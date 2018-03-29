@@ -75,13 +75,13 @@ const enchance = compose(
     { unixms: Date.now() } as { unixms: number },
     { updateUnixms: () => () => ({ unixms: Date.now() }) }
   ),
-  lifecycle<{ updateUnixms: Function }, {}>({
+  lifecycle<{ unixms: number, updateUnixms: Function }, {}>({
     componentDidMount () {
       setInterval(this.props.updateUnixms, 1000)
     }
   })
 )
 
-const DisplayDate = ({ unixms }: { unixms: string }) => <h1>{new Date(unixms).toLocaleString()}</h1>
+const DisplayDate = ({ unixms }: { unixms: number }) => <h1>{new Date(unixms).toLocaleString()}</h1>
 
-export default enchance<{ unixms: string }, {}>(DisplayDate)
+export default enchance(DisplayDate)
