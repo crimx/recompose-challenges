@@ -21,7 +21,7 @@ export function renderComponent<P> (Constant: ReactType<P>) {
     (props: P) => <Constant {...props} />
 }
 
-export function bracnch<P> (
+export function branch<P> (
   test: (props: P) => boolean,
   trueEnhancer: (Comp: ReactType<any>) => ComponentType<any>,
   falseEnhancer: (Comp: ReactType<any>) => ComponentType<any> = (Comp: ComponentType<any>) => Comp
@@ -62,7 +62,7 @@ const enhance = compose(
       fetchData().then(this.props.updateData).catch(console.error)
     }
   }),
-  bracnch<{ data?: Data }>(
+  branch<{ data?: Data }>(
     props => !props.data,
     renderComponent(Loader)
   )

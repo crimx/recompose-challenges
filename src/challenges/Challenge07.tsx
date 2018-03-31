@@ -7,7 +7,7 @@ import React, { Component, ComponentClass, SFC } from 'react'
 import { compose } from './Challenge03'
 import { withStateHandlers } from './Challenge04'
 import { lifecycle } from './Challenge05'
-import { bracnch } from './Challenge06'
+import { branch } from './Challenge06'
 
 /**
  * Implementation
@@ -41,7 +41,7 @@ const enhance = compose(
       fetchData().then(this.props.updateData).catch(console.error)
     }
   }),
-  bracnch<{ data?: Data }>(
+  branch<{ data?: Data }>(
     props => !props.data,
     renderNothing
   )

@@ -3,7 +3,7 @@
  * `compose(a, b, c)(...)` is just a nicer way to achieve `a(b(c(...)))`.
  */
 
-import React, { ReactType, ComponentType, SFC } from 'react'
+import React, { ReactType, SFC } from 'react'
 
 /**
  * Implementation
@@ -81,23 +81,11 @@ const Person: SFC<PersonProps> = ({ name, age }) => (
   </div>
 )
 
-const lowerCaseName = (Comp: ReactType<PersonProps>): SFC<PersonProps> => {
-  return (props: PersonProps) => {
-    let p = typeof props['name'] === 'string'
-      ? { name: props['name'].toLowerCase() }
-      : {}
-    return <Comp {...props} {...p} />
-  }
-}
+const lowerCaseName = (Comp: ReactType<PersonProps>): SFC<PersonProps> =>
+  (props: PersonProps) => <Comp {...props} name={props.name.toLowerCase()} />
 
-const upperCaseName = (Comp: ReactType<PersonProps>): SFC<PersonProps> => {
-  return (props: PersonProps) => {
-    let p = typeof props['name'] === 'string'
-      ? { name: props['name'].toUpperCase() }
-      : {}
-    return <Comp {...props} {...p} />
-  }
-}
+const upperCaseName = (Comp: ReactType<PersonProps>): SFC<PersonProps> =>
+  (props: PersonProps) => <Comp {...props} name={props.name.toUpperCase()} />
 
 const turnEighteen = (Comp: ReactType<PersonProps>): SFC<PersonProps> => {
   return (props: PersonProps) => <Comp {...props} age={18} />
